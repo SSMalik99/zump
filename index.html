@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find ISS</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+    integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+    crossorigin=""/>
+    <style>#map { height: 500px; }</style>
+</head>
+<body >
+    
+    Latitude : <span id="latitude_value"></span><br>
+    Latitude : <span id="long_value"></span><br>
+    <div id="map"></div>
+    
+    <!-- Script for Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM=" crossorigin=""></script>
+
+     <!-- custom Script -->
+    <script>
+        let lat = 0, long = 0;
+        let polygonAttribute = [
+            // [43.77328966498058, -79.64408636697503]
+        ]
+        fetch("http://api.open-notify.org/iss-now.json")
+        .then((response) => response.json())
+        .then((data) => {
+            let mainData = data.iss_position
+            console.log(mainData)
+            lat = mainData.latitude
+            long = mainData.longitude
+            updateHtml(lat, long)   
+        }).catch((error) => {console.error(error)})
+
+        
+
+        let map = L.map('map').setView([43.77328966498058, -79.64408636697503], 13);
+        // let marker = L.marker([lat, long]).addTo(map);
+        let marker = L.marker([43.77328966498058, -79.64408636697503]).addTo(map);
+
+        let polygon = L.polygon(polygonAttribute).addTo(map);
+
+        // marker.bindPopup("<b>Current Locatioin of International Space Station").openPopup();
+
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        function onMapClick(e) {
+            // alert("You clicked the map at " + e.latlng);
+            console.log(e.latlng.lat, e.latlng.lng)
+            polygonAttribute.push([e.latlng.lat, e.latlng.lng])
+            console.log(polygonAttribute)
+            polygon.setLatLngs(polygonAttribute)
+        }
+
+        map.on('click', onMapClick);
+
+        const updateHtml = (lat, long) => {
+            document.getElementById('latitude_value').innerHTML = lat;
+            document.getElementById('long_value').innerHTML = long
+        }
+        
+    </script>
+</body>
+</html>
